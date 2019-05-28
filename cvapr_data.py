@@ -99,7 +99,7 @@ def load_data_from_files(*file_numbers):
                      for single_eeg_to_load in eegs_to_load]
     loaded_data = []
     for eeg_path, marker_path, eval_path in zip(eegs_to_load, markers_to_load, evals_to_load):
-        block_ranges = _load_block_ranges_from_marker(marker_path)  # list of tuples
+        block_ranges = _load_block_ranges_from_marker(marker_path)[:-1]  # list of tuples
         eval_list = _load_evals(eval_path)
         raw_eeg = mne.io.read_raw_edf(eeg_path, preload=True)
         raw_eeg = raw_eeg.pick_channels(raw_eeg.info["ch_names"][0:1])  # TODO
