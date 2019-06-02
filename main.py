@@ -7,7 +7,7 @@ from keras.layers import Embedding
 from keras.layers import Conv1D, GlobalAveragePooling1D, MaxPooling1D
 import cvapr_data
 #data load
-enterface06_EMOBRAIN_path = "C:\\Users\\Dawid\\Desktop\\cvapr\\data"
+enterface06_EMOBRAIN_path = "C:\\Users\\pawel\\Documents\\Studia\\CVaPR\\Projekt"
 cvapr_data.configure(enterface06_EMOBRAIN_path, 254)
 data = cvapr_data.load_data_from_files(*range(11))[:-20]
 dataset_size = len(data)
@@ -19,11 +19,12 @@ max_output_size = 2
 x_train = np.zeros(shape=(dataset_size,max_input_size))
 y_train = np.zeros(shape=(dataset_size,max_output_size))
 for i in range(len(data)):
-    (block_eeg,single_eval) = data[i]
+    (block_eeg, single_eval, emotion_class) = data[i]
     #block_eeg_len = len(block_eeg)
     single_eval_len = len(single_eval)
     x_train[i][0:max_input_size] = block_eeg[0:max_input_size]
-    y_train[i][0:single_eval_len] = single_eval
+    #y_train[i][0:single_eval_len] = single_eval
+    y_train[i] = emotion_class
 #split into train and test
 x_test = x_train[int(0.8*dataset_size):int(dataset_size)]
 y_test = y_train[int(0.8*dataset_size):int(dataset_size)]

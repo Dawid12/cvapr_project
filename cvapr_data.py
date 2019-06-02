@@ -10,11 +10,21 @@
 
 import os
 import mne
+import csv
+import re
 
 _env = {
     "repo_path": None,
     "bss": None,
 }
+
+def _emotion_class_to_int(emotion_class):
+    if emotion_class == "Pos":
+        return -1
+    elif emotion_class == "Neg":
+        return 0
+    else:
+        return 1
 
 def _eval_path_from_eeg_path(eeg_path):
     eeg_filename = os.path.basename(eeg_path)
@@ -92,6 +102,11 @@ def load_data_from_files(*file_numbers):
     
     At the moment the eeg is only from the first channel'''
 
+    emotion_classes = []
+    with open(os.path.join(_env['repo_path'], 'enterface06_EMOBRAIN', 'Data', 'Common', 'IAPS_Classes_EEG_fNIRS.txt')) as emotion_classes_file:
+        for emotion_class in csv.reader(emotion_classes_file, delimiter='\t'):
+            emotion_classes.append(emotion_class)
+
     available_eeg_paths_snapshot = available_eeg_paths()
     eegs_to_load = [available_eeg_paths_snapshot[i] for i in file_numbers]
     markers_to_load = [single_eeg_to_load + '.mrk' for single_eeg_to_load in eegs_to_load]
@@ -103,9 +118,19 @@ def load_data_from_files(*file_numbers):
         eval_list = _load_evals(eval_path)
         raw_eeg = mne.io.read_raw_edf(eeg_path, preload=True)
         raw_eeg = raw_eeg.pick_channels(raw_eeg.info["ch_names"][0:1])  # TODO
+
+        if re.search("SES1", eeg_path):
+            session = 0
+        elif re.search("SES2", eeg_path):
+            session = 1
+        else:
+            session = 2
+        iterator = 0
         for (eeg_start, eeg_end), single_eval in zip(block_ranges, eval_list):
             block_eeg, block_times = raw_eeg[0, eeg_start:eeg_end + 1]
             block_eeg = block_eeg.flatten()
-            block_data = (block_eeg, single_eval)
+            emotion_class = emotion_classes[iterator][session]
+            block_data = (block_eeg, single_eval, _emotion_class_to_int(emotion_class))
             loaded_data.append(block_data)
+            iterator += 1
     return loaded_data
