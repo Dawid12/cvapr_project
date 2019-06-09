@@ -6,10 +6,12 @@ from keras.layers import Dense, Dropout
 from keras.layers import Embedding
 from keras.layers import Conv1D, GlobalAveragePooling1D, MaxPooling1D
 import cvapr_data
+import data_processor
 #data load
 enterface06_EMOBRAIN_path = "C:\\Users\\pawel\\Documents\\Studia\\CVaPR\\Projekt"
 cvapr_data.configure(enterface06_EMOBRAIN_path, 254)
-data = cvapr_data.load_data_from_files(*range(11))[:-20]
+data = cvapr_data.load_data_from_files(*range(11))
+data = data_processor.process_batch(data)
 dataset_size = len(data)
 max_input_size = 30000
 max_output_size = 2
