@@ -1,7 +1,20 @@
 from scipy import fftpack
 import numpy as np
 import matplotlib.pyplot as plt
+from enum import Enum 
 
+class Emotion(Enum):
+    positive_exciting = 1
+    calm = 2
+    negative_exciting = 3
+
+def calculate_emotion(valence, arousal) -> Emotion :
+    if arousal >= 3 and valence >= 3 :
+        return Emotion.positive_exciting
+    elif arousal >= 3 and valence < 3 :
+        return Emotion.positive_exciting
+    else :
+        return Emotion.calm
 
 def process_batch(data):
     for i in range(len(data)):
