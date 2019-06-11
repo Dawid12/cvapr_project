@@ -13,18 +13,37 @@ def process_batch(data):
 
 
 def time_to_freq_domain(data):
-    x = np.abs(fftpack.rfft(data))
-    freqs = fftpack.fftfreq(len(x)) * 1024
-    startFreq = 0.2
-    endFreq = 30
+    magnitudes = np.abs(fftpack.rfft(data))
+    frequencies = fftpack.fftfreq(len(magnitudes)) * 1024
+    start_freq = 0.2
+    end_freq = 30.0
 
-    startFreqIndex = int(len(freqs) / 2 / max(freqs) * startFreq)
-    endFreqIndex = int(len(freqs) / 2 / max(freqs) * endFreq)
-    x = x[startFreqIndex:endFreqIndex]
-    freqs = freqs[startFreqIndex:endFreqIndex]
+    start_freq_index = int(len(frequencies) / 2 / max(frequencies) * start_freq) + 1
+    end_freq_index = int(len(frequencies) / 2 / max(frequencies) * end_freq) + 1
+    magnitudes = magnitudes[start_freq_index:end_freq_index]
+    frequencies = frequencies[start_freq_index:end_freq_index]
 
-    # plt.bar(freqs, x, 1 / (endFreq - startFreq))
+    compressed_magnitudes = []
+    temp_magnitudes_to_compress = []
+    freq_step = 0.1
+    current_freq = start_freq + freq_step
+
+    for i in range(len(frequencies)):
+        if frequencies[i] < current_freq:
+            temp_magnitudes_to_compress.append(magnitudes[i])
+        else:
+            compressed_magnitudes.append(sum(temp_magnitudes_to_compress) / len(temp_magnitudes_to_compress))
+            temp_magnitudes_to_compress = []
+            current_freq += freq_step
+
+    # Normalize frequencies against max, comment if not needed.
+    compressed_magnitudes = [float(i) / max(compressed_magnitudes) for i in compressed_magnitudes]
+
+    # Display bar chart of frequencies against their corresponding magnitudes.
+    # compressed_frequencies = np.arange(start=start_freq, stop=end_freq, step=freq_step).tolist()
+    # compressed_frequencies = compressed_frequencies[:len(compressed_magnitudes) - len(compressed_frequencies)]
+    # plt.bar(compressed_frequencies, compressed_magnitudes, freq_step)
     # plt.xlabel('Frequency in Hertz [Hz]')
     # plt.ylabel('Frequency Domain (Spectrum) Magnitude')
     # plt.show()
-    return x
+    return compressed_magnitudes
