@@ -3,50 +3,18 @@ import tensorflow
 import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
-from keras.layers import Embedding
-from keras.layers import Conv1D, GlobalAveragePooling1D, MaxPooling1D
+from keras.layers import Conv1D,Conv2D, GlobalAveragePooling1D, MaxPooling1D
 import cvapr_data
-#data load
+import data_processor
+#configuration
 enterface06_EMOBRAIN_path = "C:\\Users\\Dawid\\Desktop\\cvapr\\data"
 cvapr_data.configure(enterface06_EMOBRAIN_path, 254)
-data = cvapr_data.load_data_from_files(*range(11))[:-20]
-dataset_size = len(data)
-max_input_size = 30000
-max_output_size = 2
-#for block_eeg,single_eval in data:
-#    if len(block_eeg) > max_input_size:
-#        max_input_size = len(block_eeg)
-x_train = np.zeros(shape=(dataset_size,max_input_size))
-y_train = np.zeros(shape=(dataset_size,max_output_size))
-for i in range(len(data)):
-    (block_eeg,single_eval) = data[i]
-    #block_eeg_len = len(block_eeg)
-    single_eval_len = len(single_eval)
-    x_train[i][0:max_input_size] = block_eeg[0:max_input_size]
-    y_train[i][0:single_eval_len] = single_eval
-#split into train and test
-x_test = x_train[int(0.8*dataset_size):int(dataset_size)]
-y_test = y_train[int(0.8*dataset_size):int(dataset_size)]
-x_train = x_train[0:int(0.8*dataset_size)-1]
-y_train = y_train[0:int(0.8*dataset_size)-1]
-
-#nn
-model = Sequential()
-model.add(Dense(500, input_dim=max_input_size, activation='relu'))
-model.add(Dense(128, activation='relu'))
-model.add(Dense(128, activation='relu'))
-model.add(Dense(128, activation='relu'))
-model.add(Dense(2, activation='sigmoid'))
-model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-
-model.fit(x_train, y_train, epochs=50, batch_size=128)
-score = model.evaluate(x_train, y_train, batch_size=128)
-print(score)
-
-#conv nn
-x_train = np.expand_dims(x_train, axis=2)
+channel_number = 71
+freq_samples = 297
+max_output_size = 3
+data_per_file = 5
 model_conv = Sequential()
-model_conv.add(Conv1D(64, 3, activation='relu', input_shape=(max_input_size, 1)))
+model_conv.add(Conv1D(64, 3, activation='relu', input_shape=(channel_number, freq_samples)))
 model_conv.add(Conv1D(64, 3, activation='relu'))
 model_conv.add(MaxPooling1D(3))
 model_conv.add(Conv1D(128, 3, activation='relu'))
@@ -54,10 +22,28 @@ model_conv.add(Conv1D(128, 3, activation='relu'))
 model_conv.add(GlobalAveragePooling1D())
 model_conv.add(Dropout(0.5))
 model_conv.add(Dense(max_output_size, activation='sigmoid'))
-
-model_conv.compile(loss='binary_crossentropy',
-              optimizer='rmsprop',
+model_conv.compile(loss='categorical_crossentropy',
+              optimizer='adam',
               metrics=['accuracy'])
-model_conv.fit(x_train, y_train, batch_size=16, epochs=10)
-score = model_conv.evaluate(x_train, y_train, batch_size=16)
-print(score)
+input_test = []
+output_test = []
+#data processing
+for i in range(2,11):
+    output_train = []
+    data = cvapr_data.load_data_from_files(i)[:data_per_file]
+    data = data_processor.process_batch(data)
+    train = np.zeros(shape=(len(data), channel_number, freq_samples))
+    for j in range(len(data)):
+        (block_eeg, single_eval, freq_domain) = data[j]
+        output_train.append(data_processor.calculate_emotion(single_eval[0],single_eval[1]))
+        train[j][0:channel_number][0:freq_samples]=freq_domain[0:channel_number][ 0:freq_samples]
+    input_test.append(train[int(0.8*data_per_file):int(data_per_file)])
+    output_test.append(output_train[int(0.8*data_per_file):int(data_per_file)])
+    output_train=np.array(output_train)
+    model_conv.fit(train, output_train, batch_size=len(train), epochs=10)
+#test -> jeszcze nie działa
+#input_test=np.array(input_test)
+#input_test=np.reshape(input_test, (len(input_test), channel_number, freq_samples))
+#output_test=np.array(output_test)
+#score = model_conv.evaluate(input_test, output_test, batch_size=len(input_test))
+#print(score)

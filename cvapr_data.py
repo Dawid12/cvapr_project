@@ -1,4 +1,4 @@
-"version 0.1.1"  # by Krzysztof Lelonek 12.05.2019
+"version 0.2.1"  # by Krzysztof Lelonek 12.05.2019
 
 # to import this module you should add "import sys" and "sys.path.append(PATH_TO_FOLDER_WITH_THIS_MODULE)"
 #   statements at the beginning of your calling module
@@ -10,11 +10,22 @@
 
 import os
 import mne
+import csv
+import re
+import numpy as np
 
 _env = {
     "repo_path": None,
     "bss": None,
 }
+
+def _emotion_class_to_int(emotion_class):
+    if emotion_class == "Pos":
+        return -1
+    elif emotion_class == "Neg":
+        return 0
+    else:
+        return 1
 
 def _eval_path_from_eeg_path(eeg_path):
     eeg_filename = os.path.basename(eeg_path)
@@ -82,15 +93,21 @@ def available_eeg_paths():
 def load_data_from_files(*file_numbers):
     '''Returns a list with each element corresponding to a picture block
     where each element is a tuple of two elements
-    where first element is the EEG for the first channel
+    where first element is the EEG of 71 channels
+    that is a 2-dimensional array
+    where first index determines EEG channel
+    and second index determines the sample's number
     and the second element is a tuple of two elements
     where first element is the patient arousal evaluation
     and second element is the patient valence evaluation
     (or may be other way around, it's just the way they are ordered in file)
     
-    file_numbers are indexed from 0 (to 10)
-    
-    At the moment the eeg is only from the first channel'''
+    file_numbers are indexed from 0 (to 10)'''
+
+    emotion_classes = []
+    with open(os.path.join(_env['repo_path'], 'enterface06_EMOBRAIN', 'Data', 'Common', 'IAPS_Classes_EEG_fNIRS.txt')) as emotion_classes_file:
+        for emotion_class in csv.reader(emotion_classes_file, delimiter='\t'):
+            emotion_classes.append(emotion_class)
 
     available_eeg_paths_snapshot = available_eeg_paths()
     eegs_to_load = [available_eeg_paths_snapshot[i] for i in file_numbers]
@@ -99,13 +116,13 @@ def load_data_from_files(*file_numbers):
                      for single_eeg_to_load in eegs_to_load]
     loaded_data = []
     for eeg_path, marker_path, eval_path in zip(eegs_to_load, markers_to_load, evals_to_load):
-        block_ranges = _load_block_ranges_from_marker(marker_path)[:-1]  # list of tuples
+        block_ranges = _load_block_ranges_from_marker(marker_path)  # list of tuples
         eval_list = _load_evals(eval_path)
         raw_eeg = mne.io.read_raw_edf(eeg_path, preload=True)
-        raw_eeg = raw_eeg.pick_channels(raw_eeg.info["ch_names"][0:1])  # TODO
         for (eeg_start, eeg_end), single_eval in zip(block_ranges, eval_list):
-            block_eeg, block_times = raw_eeg[0, eeg_start:eeg_end + 1]
-            block_eeg = block_eeg.flatten()
-            block_data = (block_eeg, single_eval)
+            # raw_eeg[channel's, sample's][tuple_elem(0=samples,1=times)]
+            block_eeg = np.array(raw_eeg[0:-1, eeg_start:eeg_end + 1][0])
+            processed_data = []
+            block_data = (block_eeg, single_eval, processed_data)
             loaded_data.append(block_data)
     return loaded_data
