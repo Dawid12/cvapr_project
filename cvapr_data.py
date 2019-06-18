@@ -18,7 +18,7 @@ In the first case, the data is first split into blocks and then each block is fi
 in the second case, the data is first filtered, then split into blocks,
 and the resulting samples will be different in both cases.
 
-You can also get the power spectra from the eeg, then you always have to define range of frequencies.
+You can also get the power spectra from the EEG, then you always have to define range of frequencies.
 Summing up, you can:
     - load blocks and do power spectra on each (althouh found an example where this errors)
     - load blocks, filter each block and do power spectra on each
@@ -122,20 +122,20 @@ class PictureBlockData:
         It is a np.array, with first dimension being channel number, and second - sample number'''
         return self.mne_eeg[:,:][0]
 
-    def power_spectrum(self, low_freq, high_freq, normalize = True):
+    def power_spectrum(self, low_freq, high_freq, step = 1):
         '''Returns a tuple,
         where first element is a np.array
         where i-th element is the power spectrum data for i-th frequency
         and second element is a np.array
-        where i-th element is the i-th frequency, in Hz.'''
+        where i-th element is the i-th frequency, in Hz.
+        
+        The frequencies will be from low_freq to high_freq, inclusive, with step step.'''
         if low_freq is None:
             low_freq = self._low_freq
         if high_freq is None:
             high_freq = self._high_freq
-        if normalize:
-            return psd.psd_multitaper(self.mne_eeg, self._low_freq, self._high_freq, normalization = "full")
-        else:
-            return psd.psd_multitaper(self.mne_eeg, self._low_freq, self._high_freq)
+        sample_freq = self.mne_eeg.info["sfreq"]
+        return psd.psd_welch(self.mne_eeg, self._low_freq, self._high_freq, n_fft = round(sample_freq / step))
 
     def copy(self):
         '''Creates and returns a copy of the object'''
@@ -188,7 +188,8 @@ def load_data_from_files(*file_numbers, low_freq = None, high_freq = None):
         - low_freq - low frequency used for filtering, in Hz, or None
         - high_freq - high frequency used for filtering, in Hz, or None
     
-    Notice that low_freq and high_freq are keyword-only parameters.'''
+    Notice that low_freq and high_freq are keyword-only parameters.
+    Loading data without filtering should be faster.'''
 
     available_eeg_paths_snapshot = available_eeg_paths()
     eegs_to_load = [available_eeg_paths_snapshot[i] for i in file_numbers]
@@ -200,16 +201,23 @@ def load_data_from_files(*file_numbers, low_freq = None, high_freq = None):
     for eeg_path, marker_path, eval_path in zip(eegs_to_load, markers_to_load, evals_to_load):
         block_ranges = _load_block_ranges_from_marker(marker_path)  # list of tuples
         eval_list = _load_evals(eval_path)
-        raw_eeg = mne.io.read_raw_edf(eeg_path, preload = True)
-        raw_eeg.pick_channels(raw_eeg.info["ch_names"][:-8]).filter(low_freq, high_freq)
+        raw_eeg = mne.io.read_raw_edf(eeg_path)
+        if no_filtering:
+            pass
+        else:
+            raw_eeg.load_data().pick_channels(raw_eeg.info["ch_names"][:-8]).filter(low_freq, high_freq)
         for (eeg_start, eeg_end), single_eval in zip(block_ranges, eval_list):
-            block_eeg = raw_eeg.copy().crop(raw_eeg.times[eeg_start], raw_eeg.times[eeg_end])
+            if no_filtering:
+                sample_freq = raw_eeg.info["sfreq"]
+                block_eeg = raw_eeg.copy().crop(eeg_start / sample_freq, eeg_end / sample_freq).load_data().pick_channels(raw_eeg.info["ch_names"][:-8])
+            else:
+                block_eeg = raw_eeg.copy().crop(raw_eeg.times[eeg_start], raw_eeg.times[eeg_end])
             picture_block_data = PictureBlockData(single_eval, block_eeg, low_freq, high_freq)
             loaded_data.append(picture_block_data)
     return loaded_data
 
 
-def load_power_spectra_from_files(*file_numbers, low_freq, high_freq, normalize = True, filter = False):
+def load_power_spectra_from_files(*file_numbers, low_freq, high_freq, step = 1, filter = False):
     '''Returns a list,
     where each element is a tuple corresponding to a picture block,
     where first element is a tuple,
@@ -233,9 +241,9 @@ def load_power_spectra_from_files(*file_numbers, low_freq, high_freq, normalize 
             from file of index 3, then index 1, 2 and 3 again (duplicated).
         - low_freq - low frequency used for power spectra calcuation, in Hz
         - high_freq - high frequency used for power spectra calcuation, in Hz
+        - step - the frequency step in returned power spectrum
         - filter - if True, the data will be explicitly filtered before power spectra calculation
             between the given frequencies
-        - normalize - if True, the data is also normalized
     
     This function uses mne function to get power spectra directly from whole EEG while defining frequencies.
     Notice that low_freq and high_freq are keyword-only and required parameters.'''
@@ -252,10 +260,8 @@ def load_power_spectra_from_files(*file_numbers, low_freq, high_freq, normalize 
         raw_eeg = mne.io.read_raw_edf(eeg_path, preload = True)
         raw_eeg.pick_channels(raw_eeg.info["ch_names"][:-8]).filter(low_freq, high_freq)
         for (eeg_start, eeg_end), single_eval in zip(block_ranges, eval_list):
-            if normalize:
-                block_frequencies = psd.psd_multitaper(raw_eeg, low_freq, high_freq, raw_eeg.times[eeg_start], raw_eeg.times[eeg_end], normalization = "full")
-            else:
-                block_frequencies = psd.psd_multitaper(raw_eeg, low_freq, high_freq, raw_eeg.times[eeg_start], raw_eeg.times[eeg_end])
+            sample_freq = raw_eeg.info["sfreq"]
+            block_frequencies = psd.psd_welch(raw_eeg, low_freq, high_freq, raw_eeg.times[eeg_start], raw_eeg.times[eeg_end], n_fft = round(sample_freq / step))
             picture_block_data = (block_frequencies, single_eval)
             loaded_data.append(picture_block_data)
     return loaded_data
