@@ -122,7 +122,6 @@ def load_data_from_files(*file_numbers):
         for (eeg_start, eeg_end), single_eval in zip(block_ranges, eval_list):
             # raw_eeg[channel's, sample's][tuple_elem(0=samples,1=times)]
             block_eeg = np.array(raw_eeg[0:-1, eeg_start:eeg_end + 1][0])
-            processed_data = []
-            block_data = (block_eeg, single_eval, processed_data)
+            block_data = (block_eeg, single_eval)
             loaded_data.append(block_data)
     return loaded_data

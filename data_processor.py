@@ -17,19 +17,27 @@ def calculate_emotion(valence, arousal) -> Emotion :
         return np.array([0,0,1])
 
 def process_batch(data):
+    """ Processes batch of raw data.
+        A batch is an array of five arrays corresponding to five blocks in a session.
+        Each of these arrays consists of 71 arrays representing EEG data for each electrode."""
+    print("Processing data...")
+    processed_data = []
     for i in range(len(data)):
-        print(f"Processing data segment {i}/{len(data)}")
         for j in range(len(data[i][0])):
-            print(f"Processing data from electrode {j}/{len(data[i][0])}")
-            data[i][2].append(time_to_freq_domain(data[i][0][j]))
-    return data
+            a=5
+            processed_data.append(time_to_freq_domain(data[i][0][j]))
+    a = 5
+    print("Done")
+    return processed_data
 
 
 def time_to_freq_domain(data):
     magnitudes = np.abs(fftpack.rfft(data))
     frequencies = fftpack.fftfreq(len(magnitudes)) * 1024
-    start_freq = 0.2
-    end_freq = 30.0
+    start_freq = 1.0
+    end_freq = 100.0
+    freq_step = 0.1
+    expected_results_list_length = (end_freq - start_freq) / freq_step - 1
 
     start_freq_index = int(len(frequencies) / 2 / max(frequencies) * start_freq) + 1
     end_freq_index = int(len(frequencies) / 2 / max(frequencies) * end_freq) + 1
@@ -38,7 +46,6 @@ def time_to_freq_domain(data):
 
     compressed_magnitudes = []
     temp_magnitudes_to_compress = []
-    freq_step = 0.1
     current_freq = start_freq + freq_step
 
     for i in range(len(frequencies)):
@@ -49,7 +56,8 @@ def time_to_freq_domain(data):
             temp_magnitudes_to_compress = []
             current_freq += freq_step
 
-    # Normalize frequencies against max, comment if not needed.
+    # Trim and normalize frequencies against max, comment if not needed.
+    compressed_magnitudes = compressed_magnitudes[0:int(expected_results_list_length) - 1]
     compressed_magnitudes = [float(i) / max(compressed_magnitudes) for i in compressed_magnitudes]
 
     # Display bar chart of frequencies against their corresponding magnitudes.
