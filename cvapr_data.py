@@ -123,6 +123,7 @@ class PictureBlockData:
         return self.mne_eeg[:,:][0]
 
     def power_spectrum(self, low_freq = None, high_freq = None, step = 1):
+
         '''Returns a tuple,
         where first element is a np.array
         where i-th element is the power spectrum data for i-th frequency
@@ -268,4 +269,8 @@ def load_power_spectra_from_files(*file_numbers, low_freq = None, high_freq = No
             block_frequencies = psd.psd_welch(raw_eeg, low_freq, high_freq, raw_eeg.times[eeg_start], raw_eeg.times[eeg_end], n_fft = round(sample_freq / step))
             picture_block_data = (block_frequencies, single_eval)
             loaded_data.append(picture_block_data)
+            # raw_eeg[channel's, sample's][tuple_elem(0=samples,1=times)]
+            block_eeg = np.array(raw_eeg[0:-1, eeg_start:eeg_end + 1][0])
+            block_data = (block_eeg, single_eval)
+            loaded_data.append(block_data)
     return loaded_data
