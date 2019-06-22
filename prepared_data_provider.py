@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 _config = {
     "channel_number": None,
@@ -7,12 +8,17 @@ _config = {
     "train_size": None,
     "number_of_files": None
 }
-def config(channel_number, freq_samples, test_size, train_size, number_of_files):
+
+
+def config(channel_number, freq_samples, test_size, train_size, number_of_files, test_to_train):
     _config["channel_number"] = channel_number
     _config["freq_samples"] = freq_samples
     _config["test_size"] = test_size
     _config["train_size"] = train_size
     _config["number_of_files"] = number_of_files
+    _config["test_to_train"] = test_to_train
+
+
 def calculate_emotion(valence, arousal):
     if arousal >= 3 and valence >= 3 :
         return np.array([1,0,0])
@@ -21,13 +27,14 @@ def calculate_emotion(valence, arousal):
     else :
         return np.array([0,0,1])
 
+
 def get_prepared_data(data, test_start, test_x, test_y):
     train_elements = int(_config["train_size"]/_config["number_of_files"])
     input_train = np.zeros(shape=(train_elements, _config["channel_number"], _config["freq_samples"]))
     output_train = []
     i = test_start
     for j in range(len(data)):
-        processed_data = data[j].power_spectrum(1, 100, 0.1)
+        processed_data = data[j].power_spectrum(1, 100, 1, True)
         block_eeg = []
         for channel_data in processed_data[0]:
             for sample in channel_data:
