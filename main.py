@@ -9,6 +9,7 @@ import cvapr_data
 import data_processor
 import prepared_data_provider
 #configuration
+random_seed = 42
 channel_number = 64
 freq_samples = 100
 max_output_size = 3
@@ -23,6 +24,7 @@ test_y = []
 enterface06_EMOBRAIN_path = "C:\\Users\\pawel\\Documents\\Studia\\CVaPR\\Projekt"
 cvapr_data.configure(enterface06_EMOBRAIN_path, 254)
 prepared_data_provider.config(channel_number, freq_samples, test_size, train_size, number_of_files, test_to_train)
+random.seed(random_seed)
 
 #model_conv = Sequential()
 #model_conv.add(Conv1D(64, 3, activation='relu', input_shape=(channel_number, freq_samples)))
