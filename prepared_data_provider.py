@@ -1,5 +1,5 @@
 import numpy as np
-import random
+from data_processor import scale, standardize
 
 _config = {
     "channel_number": None,
@@ -34,7 +34,10 @@ def get_prepared_data(data, test_start, test_x, test_y):
     output_train = []
     i = test_start
     for j in range(len(data)):
-        processed_data = data[j].power_spectrum(1, 100, 1, True)
+        processed_data = data[j].power_spectrum(1, 100, 1)
+        for channel_data in processed_data:
+            #scale(channel_data)
+            standardize(channel_data)
         block_eeg = []
         for channel_data in processed_data[0]:
             for sample in channel_data:
