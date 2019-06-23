@@ -122,8 +122,7 @@ class PictureBlockData:
         It is a np.array, with first dimension being channel number, and second - sample number'''
         return self.mne_eeg[:,:][0]
 
-    def power_spectrum(self, low_freq = None, high_freq = None, step = 1, normalize = True):
-
+    def power_spectrum(self, low_freq = None, high_freq = None, step = 1):
         '''Returns a tuple,
         where first element is a np.array
         where i-th element is the power spectrum data for i-th frequency
@@ -136,12 +135,7 @@ class PictureBlockData:
         if high_freq is None:
             high_freq = self._high_freq if self._high_freq is not None else float("inf")
         sample_freq = self.mne_eeg.info["sfreq"]
-        power_spec = psd.psd_welch(self.mne_eeg, low_freq, high_freq, n_fft = round(sample_freq / step))
-        if normalize:
-            for i in range(len(power_spec[0])):
-                max_value = max(power_spec[0][i])
-                power_spec[0][i] = [float(j)/max_value for j in power_spec[0][i]]
-        return power_spec
+        return psd.psd_welch(self.mne_eeg, low_freq, high_freq, n_fft = round(sample_freq / step))
 
     def copy(self):
         '''Creates and returns a copy of the object'''
