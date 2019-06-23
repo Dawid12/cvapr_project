@@ -76,3 +76,30 @@ def time_to_freq_domain(data):
     # plt.ylabel('Frequency Domain (Spectrum) Magnitude')
     # plt.show()
     return compressed_magnitudes
+
+def scale(np_arr, new_min = -1, new_max = 1):
+    """
+    Scales given np.array in place between passed values and returns it.
+    https://stats.stackexchange.com/questions/178626/how-to-normalize-data-between-1-and-1
+    """
+
+    min_val = np_arr.min()
+    max_val = np_arr.max()
+    np_arr -= min_val
+    np_arr *= new_max - new_min
+    np_arr /= max_val - min_val
+    np_arr += new_min
+    return np_arr
+
+
+def standardize(np_arr):
+    """
+    Standardizes the np.array in place.
+    https://kharshit.github.io/blog/2018/03/23/scaling-vs-normalization
+    """
+
+    mean_val = np_arr.mean()
+    std_dev = np_arr.std()
+    np_arr -= mean_val
+    np_arr /= std_dev
+    return np_arr
