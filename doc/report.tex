@@ -618,7 +618,7 @@ Signals Using Deep Neural Networks}
 % in the abstract or keywords.
 \IEEEtitleabstractindextext{%
 \begin{abstract}
-The abstract goes here.
+Electroencephalography is a method of measuring electrical activity of brain. It can be used in many fields, as medicine or human-machine interface. But collecting data is just a first step, then they must be interpreted by some software. In this document there is described an experiment, which aim was to measure possibilities of EEG data analysis and emotion recognition using neural network. In this experiment there was used convolution neural network and EMOBRAIN database to train and test it. Results received were surprisingly low, what could be caused mainly by low quality of used data. Experiment indicated that high quality and well preparing of data can have key impact for effectiveness of neural network and classification at all.
 \end{abstract}
 
 % Note that keywords are not normally used for peerreview papers.
@@ -687,7 +687,10 @@ The abstract goes here.
 % 
 % Here we have the typical use of a "T" for an initial drop letter
 % and "HIS" in caps to complete the first word.
-\IEEEPARstart{T}{he} introduction goes here. It should contain about ten sentences.
+\IEEEPARstart{L}{iving} brain generates electric field depending of its current activity, physical state, emotions, etc. Measuring that electrical brain activity enables "brain reading". It can be used in many fields, e.g. medicine (brain diseases diagnosis), criminology (lie detector), human-machine interfaces (especially for paralyzed people). Reading electric signals from brain is possible with using electroencephalography (EEG). Weakness of EEG is that the noninvasive variant is very sensitive for any noises, so it is practically useless in normal, not laboratorial, environment.
+
+Important challenge for EEG is analysis and interpretation of collected data. One of possible approaches to this issue is using neural network to analysis of EEG data. The aim this project is an examination of  effectiveness this approach by making an experience of emotion recognition using EEG data and neural network. There will be designed and implemented convolution neural network. Data for training and testing the network will be received from EMOBRAIN database. This work uses Python to implementation of the research instrument. To implementation the network there will be used Keras and Tensorflow libraries and for preprocessing and extraction data from EEG files there will be used MNE library.
+
 % You must have at least 2 lines in the paragraph with the drop letter
 % (should never be an issue)
 
@@ -894,6 +897,7 @@ Classifiers used in articles are marked as green in an appropriate cell in table
 \caption{Classifiers used in articles}
 \label{table_classifiers}
 \centering
+\setlength\tabcolsep{2pt}
 \begin{tabular}{|c|c|c|c|c|c|}
 \hline &Article I&Article II&Article III&Article IV&Article V\\\hline
 ANN&&&\cellcolor{green}&\cellcolor{green}&\cellcolor{green}\\\hline
@@ -949,18 +953,102 @@ In the Common directory there are files with arousal and valence evaluation of e
 
 In the fNIRS directory there are fNIRS files corresponding to each session conducted during the research. There is also a MATLAB code that can be used to load this data for further analysis.
 
+\subsection{Data Usefulness Analysis}
+During analysis of data some failures occurred while trying to read EEG data for 2nd and 3rd session for first subject, so these data were considered as corrupted. Moreover 1st and 2nd series for first patient have the same assessments and timestamps, and 1st series for second patient has wrong, too high, amount of timestamps, so they both were rejected too. As a result there were used only 11 data series.
+
+Eight last channels of data were rejected because according to database description they contain data coming from other than EEG sensors, e.g. Skin Response or Stimuli Occurance.
+
+In experiment there were used data from 64 EEG channels, marker files and assessment of image blocks. FNIRS data and assessments from IAPS database weren't used.
 
 
 \section{Methods}
-The conclusion goes here.
+In the experiment data from base were read and extracted from files. Image assessments were transformed into three classes and EEG series were filtered and transformed from time domain to frequency domain. Received data were divided into two sets in 4:1 ratio: training and testing set. Then a neural network was created and trained with training data. Finally the accuracy of the network was measured using test set.
+
+\subsection{Preprocessing}
+Preprocessing of EEG data consisted of four parts:
+\begin{itemize}
+\item{Extracting sections for individual stimuli according to markers}
+\item{Filtering data for EEG-useful frequencies, i.e. 1-100~Hz}
+\item{Transforming data to frequency domain}
+\item{Removing unused channels}
+\item{Standardizing data}
+\end{itemize}
+
+To extract data from .To extract data from .bdf files and other operation on these files MNE library was used. Marker files were read as text data. Finding and cutting out segments from data was implemented in \texttt{cvapr\_data} module. Transforming data to power spectrum was originally implemented by FFT transform but because of inacceptable time of working finally MNE feature was used. All preprocessing steps were processed in some different orders to experimentally find the best one. Finally they were performed in the following order: extracting sections, removing channels, transforming to power spectrum with filtering and standarizing.
+
+For representing EEG data in program, a class \texttt{PictureBlockData} was defined. That class delivered features such as accessing to raw EEG and corresponding assessment, filtering data and transforming it to frequency domain.
+
+Preprocessing of image assessments was significantly easier. Its only step was to transform two dimensional numerical values to three discrete classes: calm, positive and negative.
+
+\subsection{Neural Network Models}
+In the experiment there were used convolution neural networks. Some different models were created and tested. All data were provided as plain 1D data, so networks use only 1D layers. Structures of networks are described below:
+\begin{itemize}
+\item{Network 1}
+\begin{itemize}
+\item{Convolution layer with 64 filters of size 11}
+\item{Convolution layer with 128 filters of size 7}
+\item{Convolution layer with 256 filters of size 3}
+\item{Flattening layer}
+\item{Full-connected layer with softmax activation function}
+\end{itemize}
+\item{Network 2}
+\begin{itemize}
+\item{Convolution layer with 128 filters of size 3}
+\item{Flattening layer}
+\item{Full-connected layer with sigmoid activation function}
+\end{itemize}
+\item{Network 3}
+\begin{itemize}
+\item{Convolution layer with 128 filters of size 3}
+\item{Flattening layer}
+\item{Full-connected layer with softmax activation function}
+\end{itemize}
+\item{Network 4}
+\begin{itemize}
+\item{Convolution layer with 256 filters of size 7}
+\item{Flattening layer}
+\item{Full-connected layer with softmax activation function}
+\end{itemize}
+\item{Network 5}
+\begin{itemize}
+\item{Two convolution layers with 256 filters of size 7}
+\item{Flattening layer}
+\item{Full-connected layer with softmax activation function}
+\end{itemize}
+\end{itemize}
+
+Output of all the networks is three-element vector, whose cells correspond to emotion classes. For the all convolution layers the rectified linear unit function was used as activation function. 
+As loss function there was used categorical crossentropy and as optimizer - adam. The metric user for measuring network prediction quality was accuracy.
+
+\subsection{Training Networks}
+Before training networks test and train data sets were prepared. Train set contained 80\% of all the data, test set was built from remaining 20\%. Both sets were prepared from all used series of data, i.e. every single series was divided in the same ratio. Every model was trained and testes several times because of nondeterministic character of initial weights of network.
+
+Training of network was processed with two stop conditions: target accuracy and no improvements for specified number of iterations. Target accuracy was set to value 0.6 and limit of iterations without improvement to 10. In every iteration training data were shuffled and 5 epochs of training were performed.
+
 
 \section{Results}
-The conclusion goes here.
+Results of training and testing models are showed in table \ref{table_networks}.
+\begin{table}[!t]
+\renewcommand{\arraystretch}{1.3}
+\caption{Network accuracies}
+\label{table_networks}
+\centering
+%\setlength\tabcolsep{2pt}
+\begin{tabular}{|c|c|}
+\hline Model&Mean accuracy\\\hline
+Network 1&45.57\%\\\hline
+Network 2&43.19\%\\\hline
+Network 3&47.18\%\\\hline
+Network 4&48.27\%\\\hline
+Network 5&46.70\%\\\hline
+\end{tabular}
+\end{table}
+
+Taking into account that 39\% of all data are of class 'calm', results are only slightly better than primitive predicting always the most common class. The reason of such a weak results can be caused by low quality of data. Analysis of data indicated that some data (4 of 15 data series) are corrupted, and we can expect that more detailed researches could reveal abnormalities in other series too. Moreover amount of data is small. There are only 11 series, 30 stimuli each. It makes only 330 samples for both training and testing. It is also possible that some contribution in low results is caused by bad understanding of data, not sufficient preprocessing or wrong network structure and network parameters.
+
 
 \section{Summary}
-The conclusion goes here.
-
-
+This project aim was to examine of  effectiveness of using neural network in EEG data analysis. In the experiment there was examined accuracy of emotion recognition based on EEG data. As parts of this tasks there was implemented a convolution neural network and preprocessing module for data, and finally network was trained and its accuracy was measured for test set. Results weren't very high, which can be caused by small amount and low quality of data, but also by wrong parameters or structure of network. Results suggests that emotion recognition is a complex problem, that requires huge amount of data and efforts to be solved with good results.
 
 
 % if have a single appendix:
@@ -979,8 +1067,12 @@ The conclusion goes here.
 
 
 \appendices
-\section{About the Authors}
-Appendix one text goes here.
+\section{Author Contributions}
+\textbf{Data analysis} K. Lelonek, M. Jakóbczyk \hfill \break
+\textbf{Software} P. Figiel, K. Lelonek, D. Pieła \hfill \break
+\textbf{Writing} K. Janas, M. Jakóbczyk \hfill \break
+\textbf{Suggest what roles to write here and where you should be mentioned, please} \hfill \break
+\textbf{About CRediT:} https://www.casrai.org/credit.html
 
 \section{Code}
 Appendix two text goes here.
@@ -1041,6 +1133,7 @@ Ahmad Tauseef Sohaib, Shahnawaz Qureshi, Johan Hagelback, Olle Hilborn, Petar Je
 Lachezar Bozhkov, Petia Georgieva, Isabel Santos, Ana Pereira and Carlos Silva \emph{EEG-based subject independent affective computing models}, \hskip 1em plus 0.5em minus 0.4em\relax 2015 INNS Conference on Big Data, 2015
 \bibitem{art5}
 Shahnawaz Quresh, Johan Hagelback, Syed Muhammad Zeeshan Iqbal, Hamad Javaid and Craig A. Lindley \emph{Evaluation of Classifiers for Emotion Detection while Performing Physical and Visual Tasks: Tower of Hanoi and IAPS}, \hskip 1em plus 0.5em minus 0.4em\relax Intelligent Systems Conference, 2018
+\bibitem{db_desc} Arman Savran, Koray Ciftci, Guillame Chanel, Javier Cruz Mota, Luong Hong Viet, BülentSankur, Lale Akarun, Alice Caplier and Michele Rombaut \emph{Emotion Detection in the Loop from Brain Signals and Facial Images}, \hskip 1em plus 0.5em minus 0.4em\relax Proceedings of the eNTERFACE 2006 Workshop, 2006
 
 \end{thebibliography}
 
