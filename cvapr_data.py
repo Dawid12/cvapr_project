@@ -1,4 +1,4 @@
-"version 0.3.2"  # by Krzysztof Lelonek
+"version 1.0.0"  # by Krzysztof Lelonek
 
 
 '''
@@ -124,8 +124,9 @@ class PictureBlockData:
 
     def power_spectrum(self, low_freq = None, high_freq = None, step = 1):
         '''Returns a tuple,
-        where first element is a np.array
-        where i-th element is the power spectrum data for i-th frequency
+        where first element is a 2D np.array
+        with first index corresponding to channel number
+        and second index corresponding frequency
         and second element is a np.array
         where i-th element is the i-th frequency, in Hz.
         
@@ -221,8 +222,9 @@ def load_power_spectra_from_files(*file_numbers, low_freq = None, high_freq = No
     '''Returns a list,
     where each element is a tuple corresponding to a picture block,
     where first element is a tuple,
-    where first element is a np.array
-    where i-th element is the power spectrum data for i-th frequency
+    where first element is a 2D np.array
+    with first index corresponding to channel number
+    and second index corresponding frequency
     and second element is a np.array
     where i-th element is the i-th frequency, in Hz
     and second element is a tuple
@@ -230,9 +232,9 @@ def load_power_spectra_from_files(*file_numbers, low_freq = None, high_freq = No
     (or may be other way around, it's just the way they are ordered in file).
 
     Visually:
-    [ (   ([power1, power2, ...], [freq1, freq2, ...]), (arousal, valence)   ),
-      (   ([power1, power2, ...], [freq1, freq2, ...]), (arousal, valence)   ),
-      ...
+    [ (   ( [[ch1pow1,ch1pow2,...],[ch2pow1,ch2pow2...],...], [freq1, freq2, ...] ), (arousal, valence)   ),
+      (   ( [[ch1pow1,ch1pow2,...],[ch2pow1,ch2pow2...],...], [freq1, freq2, ...] ), (arousal, valence)   ),
+      ...                                                                                                    ]
                                                                                 ]
     Parameters:
         - file_numbers - indices of available EEG files (from 0 to 10).
