@@ -905,7 +905,7 @@ LogReg&&&&\cellcolor{green}&\\\hline
 LDA&&&&\cellcolor{green}&\\\hline
 kNN&&&\cellcolor{green}&\cellcolor{green}&\cellcolor{green}\\\hline
 NB&&&&\cellcolor{green}&\\\hline
-SVN&&\cellcolor{green}&\cellcolor{green}&\cellcolor{green}&\cellcolor{green}\\\hline
+SVM&&\cellcolor{green}&\cellcolor{green}&\cellcolor{green}&\cellcolor{green}\\\hline
 DT&&&&\cellcolor{green}&\\\hline
 BN&&&\cellcolor{green}&&\cellcolor{green}\\\hline
 FDA&\cellcolor{green}&&&&\\\hline
@@ -941,6 +941,21 @@ The most important task is to select subject specific features. Sequential Featu
 
 \subsubsection*{Article V}
 70\% of the subjects considered the Tower of Hanoi problem with 4 disc hard, while 30\% treated them easy. On the other hand, the 5 disc version was evaluated hard by 80\% of subjects and easy by 20\%. SVM proved to be the best at classifying EEG data with specific emotional states with accuracy of 70\%, followed by RT with 60\% accuracy. The study shows that focused brain activities on one goal may yield better accuracy than diverse activities on diverse goals.
+
+\subsection{Summary}
+All listed articles covered creating model for performing emotion recognition.
+Each article used different classifier (or set of classifiers) for this purpose.
+The most distinguishing cases were for Article I and Article II. In Article I only
+Fisher's Discriminant Analysis classifier was used. Calculcated performance in terms
+of arousal and valance oscilated between 92.3\% and 94.9\%. In Article II data was
+analyzed using SVM, giving accuracy around 87%. It turned out that a greater amount of
+channel improves the accuracy of the prediction. In addition results indicated
+stimuli- and device-independency, which is an important feature. In contrast, SVM
+classifier in Article III offered an accuracy of around 56,10/%. Although it is not
+a very high score, among other tested classifiers that was the best method. The best
+results for SVM was also obtained in Article V with 70\% accuracy. Only in Article IV
+approach using Sequential Feature Selection gave satisfying results but at a cost of
+heavy computational power required. 
 
 \section{Materials}
 
