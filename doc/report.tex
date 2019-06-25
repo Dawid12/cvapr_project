@@ -618,7 +618,7 @@ Signals Using Deep Neural Networks}
 % in the abstract or keywords.
 \IEEEtitleabstractindextext{%
 \begin{abstract}
-Electroencephalography is a method of measuring electrical activity of brain. It can be used in many fields, as medicine or human-machine interface. But collecting data is just a first step, then they must be interpreted by some software. In this document there is described an experiment, which aim was to measure possibilities of EEG data analysis and emotion recognition using neural network. In this experiment there was used convolution neural network and EMOBRAIN database to train and test it. Results received were surprisingly low, what could be caused mainly by low quality of used data. Experiment indicated that high quality and well preparing of data can have key impact for effectiveness of neural network and classification at all.
+Electroencephalography is a method of measuring electrical activity of brain. It can be used in many fields, as medicine or human-machine interface. But collecting data is just a first step, then they must be interpreted by some software. In this document there is described an experiment, which aim was to measure possibilities of EEG data analysis and emotion recognition using neural network. In this experiment there was used convolution neural network and EMOBRAIN database to train and test it. Results received were below 50\% accuracy, what could be caused mainly by low quality of used data. Experiment indicated that high quality and well preparing of data can have key impact for effectiveness of neural network and classification at all.
 \end{abstract}
 
 % Note that keywords are not normally used for peerreview papers.
@@ -689,7 +689,7 @@ Electroencephalography is a method of measuring electrical activity of brain. It
 % and "HIS" in caps to complete the first word.
 \IEEEPARstart{L}{iving} brain generates electric field depending of its current activity, physical state, emotions, etc. Measuring that electrical brain activity enables "brain reading". It can be used in many fields, e.g. medicine (brain diseases diagnosis), criminology (lie detector), human-machine interfaces (especially for paralyzed people). Reading electric signals from brain is possible with using electroencephalography (EEG). Weakness of EEG is that the noninvasive variant is very sensitive for any noises, so it is practically useless in normal, not laboratorial, environment.
 
-Important challenge for EEG is analysis and interpretation of collected data. One of possible approaches to this issue is using neural network to analysis of EEG data. The aim this project is an examination of  effectiveness this approach by making an experience of emotion recognition using EEG data and neural network. There will be designed and implemented convolution neural network. Data for training and testing the network will be received from EMOBRAIN database. This work uses Python to implementation of the research instrument. To implementation the network there will be used Keras and Tensorflow libraries and for preprocessing and extraction data from EEG files there will be used MNE library.
+Important challenge for EEG is analysis and interpretation of collected data. One of possible approaches to this issue is using neural network to analysis of EEG data. The aim this project is an examination of  effectiveness this approach by making an experience of emotion recognition using EEG data and neural network. There will be designed and implemented convolution neural network. Data for training and testing the network will be received from EMOBRAIN database. This work uses Python to implementation of the research instrument. To implement the network there will be used Keras and Tensorflow libraries and for preprocessing and extraction data from EEG files there will be used MNE library.
 
 % You must have at least 2 lines in the paragraph with the drop letter
 % (should never be an issue)
@@ -948,10 +948,10 @@ Each article used different classifier (or set of classifiers) for this purpose.
 The most distinguishing cases were for Article I and Article II. In Article I only
 Fisher's Discriminant Analysis classifier was used. Calculcated performance in terms
 of arousal and valance oscilated between 92.3\% and 94.9\%. In Article II data was
-analyzed using SVM, giving accuracy around 87%. It turned out that a greater amount of
+analyzed using SVM, giving accuracy around 87\%. It turned out that a greater amount of
 channel improves the accuracy of the prediction. In addition results indicated
 stimuli- and device-independency, which is an important feature. In contrast, SVM
-classifier in Article III offered an accuracy of around 56,10/%. Although it is not
+classifier in Article III offered an accuracy of around 56,10\%. Although it is not
 a very high score, among other tested classifiers that was the best method. The best
 results for SVM was also obtained in Article V with 70\% accuracy. Only in Article IV
 approach using Sequential Feature Selection gave satisfying results but at a cost of
@@ -989,14 +989,14 @@ Preprocessing of EEG data consisted of four parts:
 \item{Standardizing data}
 \end{itemize}
 
-To extract data from .To extract data from .bdf files and other operation on these files MNE library was used. Marker files were read as text data. Finding and cutting out segments from data was implemented in \texttt{cvapr\_data} module. Transforming data to power spectrum was originally implemented by FFT transform but because of inacceptable time of working finally MNE feature was used. All preprocessing steps were processed in some different orders to experimentally find the best one. Finally they were performed in the following order: extracting sections, removing channels, transforming to power spectrum with filtering and standarizing.
+To extract data from .To extract data from .bdf files and other operation on these files MNE library was used. Marker files were read as text data. Finding and cutting out segments from data was implemented in \texttt{cvapr\_data} module. Transforming data to power spectrum was originally implemented by FFT transform but because of inacceptable time of working finally MNE feature was used. All preprocessing steps were processed in some different orders to experimentally find the best one. Finally they were performed in the following order: extracting sections, removing channels, transforming to power spectrum and standarizing.
 
 For representing EEG data in program, a class \texttt{PictureBlockData} was defined. That class delivered features such as accessing to raw EEG and corresponding assessment, filtering data and transforming it to frequency domain.
 
 Preprocessing of image assessments was significantly easier. Its only step was to transform two dimensional numerical values to three discrete classes: calm, positive and negative.
 
 \subsection{Neural Network Models}
-In the experiment there were used convolution neural networks. Some different models were created and tested. All data were provided as plain 1D data, so networks use only 1D layers. Structures of networks are described below:
+In the experiment there were used convolution neural networks. Some different models were created and tested. All data were provided as 1D data, so networks use only 1D layers. Structures of networks are described below:
 \begin{itemize}
 \item{Network 1}
 \begin{itemize}
@@ -1036,7 +1036,7 @@ Output of all the networks is three-element vector, whose cells correspond to em
 As loss function there was used categorical crossentropy and as optimizer - adam. The metric user for measuring network prediction quality was accuracy.
 
 \subsection{Training Networks}
-Before training networks test and train data sets were prepared. Train set contained 80\% of all the data, test set was built from remaining 20\%. Both sets were prepared from all used series of data, i.e. every single series was divided in the same ratio. Every model was trained and testes several times because of nondeterministic character of initial weights of network.
+Before training networks test and train data sets were prepared. Train set contained 80\% of all the data, test set was built from remaining 20\%. Both sets were prepared from all used series of data, i.e. every single series was divided in the same ratio. Every model was trained and tested several times because of nondeterministic character of initial weights of network.
 
 Training of network was processed with two stop conditions: target accuracy and no improvements for specified number of iterations. Target accuracy was set to value 0.6 and limit of iterations without improvement to 10. In every iteration training data were shuffled and 5 epochs of training were performed.
 
@@ -1059,11 +1059,11 @@ Network 5&46.70\%\\\hline
 \end{tabular}
 \end{table}
 
-Taking into account that 39\% of all data are of class 'calm', results are only slightly better than primitive predicting always the most common class. The reason of such a weak results can be caused by low quality of data. Analysis of data indicated that some data (4 of 15 data series) are corrupted, and we can expect that more detailed researches could reveal abnormalities in other series too. Moreover amount of data is small. There are only 11 series, 30 stimuli each. It makes only 330 samples for both training and testing. It is also possible that some contribution in low results is caused by bad understanding of data, not sufficient preprocessing or wrong network structure and network parameters.
+Taking into account that 39\% of all data are of class 'calm', results are up to 10 percentage points better than primitive predicting always the most common class, which is moderate success. The reason results weren't higher can be caused by low quality of data. Analysis of data indicated that some data (4 of 15 data series) are corrupted, and we can expect that more detailed researches could reveal abnormalities in other series too. Another significant problem can be labeling, which was based on self-assesments of patients, possibly inaccurate or improper. It is also possible that some contribution in low results is caused by bad understanding of data, not sufficient preprocessing or wrong network structure and network parameters.
 
 
 \section{Summary}
-This project aim was to examine of  effectiveness of using neural network in EEG data analysis. In the experiment there was examined accuracy of emotion recognition based on EEG data. As parts of this tasks there was implemented a convolution neural network and preprocessing module for data, and finally network was trained and its accuracy was measured for test set. Results weren't very high, which can be caused by small amount and low quality of data, but also by wrong parameters or structure of network. Results suggests that emotion recognition is a complex problem, that requires huge amount of data and efforts to be solved with good results.
+This project aim was to examine of  effectiveness of using neural network in EEG data analysis. In the experiment there was examined accuracy of emotion recognition based on EEG data. As parts of this tasks there was implemented a convolution neural network and preprocessing module for data, and finally network was trained and its accuracy was measured for test set. Results weren't very high, which can be caused by small amount and low quality of data, but also by wrong parameters or structure of network or low understanding of data. Results suggests that emotion recognition is a complex problem, that requires huge amount of data and efforts to be solved with good results.
 
 
 % if have a single appendix:
@@ -1086,8 +1086,6 @@ This project aim was to examine of  effectiveness of using neural network in EEG
 \textbf{Data analysis} K. Lelonek, M. Jakóbczyk \hfill \break
 \textbf{Software} P. Figiel, K. Lelonek, D. Pieła \hfill \break
 \textbf{Writing} K. Janas, M. Jakóbczyk \hfill \break
-\textbf{Suggest what roles to write here and where you should be mentioned, please} \hfill \break
-\textbf{About CRediT:} https://www.casrai.org/credit.html
 
 \section{Code}
 Appendix two text goes here.
