@@ -25,13 +25,13 @@ Third, clone the project repository.
 $ git clone https://github.com/Dawid12/cvapr_project.git
 ```
 
-Fouth, navigate to the project directory.
+Fourth, navigate to the project directory.
 
 ```bash
 $ cd cvapr_project/
 ```
 
-Fifth, run the application providing the directory "enterface06_EMOBRAIN" of the downloaded database in place of "db_dir".
+Fifth, run the application providing the directory of the downloaded database, which contains "enterface06_EMOBRAIN" subdirectory, in place of "db_dir".
 
 ```bash
 $ python main.py "db_dir"
