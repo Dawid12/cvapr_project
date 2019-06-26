@@ -8,6 +8,17 @@ from keras.layers import Conv1D,Conv2D, GlobalAveragePooling1D, MaxPooling1D
 import cvapr_data
 import data_processor
 import prepared_data_provider
+import sys
+import os
+
+def get_databse_path():
+    if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help"):
+        print("Usage: python main.py <path_to_dir_with_database>")
+        print("Directory <path_to_dir_with_database> has to contain enterface06_EMOBRAIN directory.")
+        return None
+    elif len(sys.argv) >= 1:
+        return sys.argv[1]
+
 #configuration
 random_seed = 42
 channel_number = 64
@@ -21,40 +32,80 @@ train_size = int((1-test_to_train)*(number_of_files*data_per_file))
 test_x = np.zeros(shape=(test_size, channel_number, freq_samples))
 test_y = []
 
-enterface06_EMOBRAIN_path = "C:\\Users\\pawel\\Documents\\Studia\\CVaPR\\Projekt"
+#enterface06_EMOBRAIN_path = "C:\\Users\\pawel\\Documents\\Studia\\CVaPR\\Projekt"
+enterface06_EMOBRAIN_path = get_databse_path()
+if enterface06_EMOBRAIN_path is None or not os.path.isdir(enterface06_EMOBRAIN_path):
+    print(f"Cannot find directory {enterface06_EMOBRAIN_path}")
+    exit(1)
 cvapr_data.configure(enterface06_EMOBRAIN_path, 254)
 prepared_data_provider.config(channel_number, freq_samples, test_size, train_size, number_of_files, test_to_train)
 random.seed(random_seed)
-
-#model_conv = Sequential()
-#model_conv.add(Conv1D(64, 3, activation='relu', input_shape=(channel_number, freq_samples)))
-##model_conv.add(Conv1D(64, 3, activation='relu'))
-#model_conv.add(MaxPooling1D(3))
-#model_conv.add(Conv1D(128, 3, activation='relu'))
-#model_conv.add(Conv1D(128, 3, activation='relu'))
-#model_conv.add(GlobalAveragePooling1D())
-#model_conv.add(Dropout(0.5))
-#model_conv.add(Dense(max_output_size, activation='sigmoid'))
-#model_conv.compile(loss='categorical_crossentropy',
-#              optimizer='adam',
-#              metrics=['accuracy'])
-
-model_conv = Sequential()
-model_conv.add(Conv1D(128, 3, activation='relu', input_shape=(channel_number, freq_samples)))
-model_conv.add(keras.layers.Flatten())
-model_conv.add(Dense(max_output_size, activation='sigmoid'))
-model_conv.compile(loss='categorical_crossentropy',
-              optimizer='adam',
-              metrics=['accuracy'])
 
 # load data
 train_x = []
 train_y = []
 for i in range(number_of_files):
     data = cvapr_data.load_data_from_files(i)[:data_per_file]
+    #data = cvapr_data.load_data_from_files(i, low_freq = 1, high_freq = 100)[:data_per_file]
     (temp_train_x, temp_train_y) = prepared_data_provider.get_prepared_data(data, int(i * (test_size / number_of_files)), test_x, test_y)
     train_x.append(temp_train_x)
     train_y.append(temp_train_y)
+
+def create_model_1():  # 46.54%, 44,59% from 7 for standardize, power post split, no filtering, random 42
+    model_conv = Sequential()
+    model_conv.add(Conv1D(64, 11, activation='relu', input_shape=(channel_number, freq_samples)))
+    model_conv.add(Conv1D(128, 7, activation='relu'))
+    model_conv.add(Conv1D(256, 3, activation='relu'))
+    model_conv.add(keras.layers.Flatten())
+    model_conv.add(Dense(max_output_size, activation='softmax'))
+    model_conv.compile(loss='categorical_crossentropy',
+                  optimizer='adam',
+                  metrics=['accuracy'])
+    return model_conv
+
+
+def create_model_2():  # 43,30%, 43,07% from 7 for standardize, power post split, no filtering, random 42
+    model_conv = Sequential()
+    model_conv.add(Conv1D(128, 3, activation='relu', input_shape=(channel_number, freq_samples)))
+    model_conv.add(keras.layers.Flatten())
+    model_conv.add(Dense(max_output_size, activation='sigmoid'))
+    model_conv.compile(loss='categorical_crossentropy',
+                  optimizer='adam',
+                  metrics=['accuracy'])
+    return model_conv
+
+def create_model_3():  # 48,05%, 47,40%, 46,10% from 7 for standardize, power post split, no filtering, random 42
+    model_conv = Sequential()
+    model_conv.add(Conv1D(128, 3, activation='relu', input_shape=(channel_number, freq_samples)))
+    model_conv.add(keras.layers.Flatten())
+    model_conv.add(Dense(max_output_size, activation='softmax'))
+    model_conv.compile(loss='categorical_crossentropy',
+                  optimizer='adam',
+                  metrics=['accuracy'])
+    return model_conv
+
+def create_model_4():  # 48,70%, 48,27%, 47,84% from 7 for standardize, power post split, no filtering, random 42
+    model_conv = Sequential()
+    model_conv.add(Conv1D(256, 7, activation='relu', input_shape=(channel_number, freq_samples)))
+    model_conv.add(keras.layers.Flatten())
+    model_conv.add(Dense(max_output_size, activation='softmax'))
+    model_conv.compile(loss='categorical_crossentropy',
+                  optimizer='adam',
+                  metrics=['accuracy'])
+    return model_conv
+
+def create_model_5():  # 48,70%, 48,27%, 47,84%, 42,00% from 7 for standardize, power post split, no filtering, random 42
+    model_conv = Sequential()
+    model_conv.add(Conv1D(256, 7, activation='relu', input_shape=(channel_number, freq_samples)))
+    model_conv.add(Conv1D(256, 7, activation='relu'))
+    model_conv.add(keras.layers.Flatten())
+    model_conv.add(Dense(max_output_size, activation='softmax'))
+    model_conv.compile(loss='categorical_crossentropy',
+                  optimizer='adam',
+                  metrics=['accuracy'])
+    return model_conv
+
+model_conv = create_model_5()
 
 # train
 target_accuracy = 0.6
