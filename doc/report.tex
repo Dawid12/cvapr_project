@@ -80,6 +80,7 @@
 
 %\usepackage[polish]{babel}
 \usepackage[table]{xcolor}
+\usepackage{listings}
 
 
 % Some very useful LaTeX packages include:
@@ -1087,9 +1088,16 @@ This project aim was to examine of  effectiveness of using neural network in EEG
 \textbf{Software} P. Figiel, K. Lelonek, D. Pieła \hfill \break
 \textbf{Writing} K. Janas, M. Jakóbczyk \hfill \break
 
+\onecolumn
 \section{Code}
-Appendix two text goes here.
-
+\subsection*{\texttt{main}}
+\lstinputlisting[language=Python, breaklines=true, postbreak=\mbox{{$\hookrightarrow$}\space},]{../main.py}
+\subsection*{\texttt{cvapt\_data}}
+\lstinputlisting[language=Python, breaklines=true, postbreak=\mbox{{$\hookrightarrow$}\space},]{../cvapr_data.py}
+\subsection*{\texttt{prepared\_data\_provider}}
+\lstinputlisting[language=Python, breaklines=true, postbreak=\mbox{{$\hookrightarrow$}\space},]{../prepared_data_provider.py}
+\subsection*{\texttt{data\_processor}}
+\lstinputlisting[language=Python, breaklines=true, postbreak=\mbox{{$\hookrightarrow$}\space},]{../data_processor.py}
 
 % use section* for acknowledgment
 %\ifCLASSOPTIONcompsoc
